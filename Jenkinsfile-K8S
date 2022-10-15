@@ -11,7 +11,13 @@ pipeline {
                 checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/ygminds73/bank-project.git']]])
             }
         }
-    
+        
+        stage('Build jar') {
+            steps {
+                sh "mvn clean install"
+            }
+        }
+        
         stage ("Build image") {
             steps {
                 script {
@@ -32,8 +38,10 @@ pipeline {
         
         stage ("Kube Deploy") {
             steps {
-                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'K8S', namespace: '', serverUrl: '') {
+                withKubeConfig(caCertificate: '', clusterName: '', contextName: '', credentialsId: 'k8s-cred', namespace: '', serverUrl: '') {
                  sh "kubectl apply -f eks-deploy-from-ecr.yaml"
+            
+                 
                 }
             }
         }
